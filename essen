@@ -1,0 +1,37 @@
+#!/bin/sh
+
+
+date_before=$( date +'%Y/%m/01' --date="`date +%Y-%m-16` -4 month" )
+date_end=$( date +'%Y/%m/%d' --date="`date +%Y-%m-01` ")
+
+
+date_before_gnuplot=$( date +'%Y-%m-01' --date="`date +%Y-%m-16` -4 month " )
+date_end_gnuplot=$( date +'%Y-%m-%d' --date="`date +%Y-%m-07` ")
+
+
+date_before_gnuplot_xrange=$( date +'%Y-%m-14' --date="`date +%Y-%m-16` -5 month " )
+date_end_gnuplot_xrange=$( date +'%Y-%m-19' --date="`date +%Y-%m-01` ")
+
+ledger_param="-j -W reg ^Expenses:Food Expenses:Dining -n -b $date_before -e $date_end"
+
+ledger $ledger_param
+echo $ledger_param
+
+tempfile=$(mktemp)
+
+ledger $ledger_param > $tempfile
+
+gnuplot <<- EOF
+  set terminal png size 800,600 enhanced font "Biolinum,10"
+  set output "graphs/essen.png"
+  set xdata time
+  set grid
+  set timefmt "%Y-%m-%d"
+  set format x "%m/%Y"
+  set xtics format "%d"
+  set boxwidth 0.95 relative
+  set xrange [ "$date_before_gnuplot_xrange" : "$date_end_gnuplot_xrange"]
+  set xtics "$date_before_gnuplot", 604800, "$date_end_gnuplot"
+  f(x) = mean_y
+  fit f(x) "$tempfile" u 1:2 via mean_y
+  plot "$tempfile" using 1:2 title "Kosten Essen" with boxes lc rgb"red" fs solid 0.25, f(x)

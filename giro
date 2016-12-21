@@ -1,0 +1,31 @@
+#!/bin/sh
+
+
+date_before=$( date +'%Y/%m/01' --date="`date +%Y-%m-16` -4 month" )
+date_end=$( date +'%Y/%m/%d' --date="`date +%Y-%m-01` ")
+
+
+date_before_gnuplot=$( date +'%Y-%m-01' --date="`date +%Y-%m-16` -5 month " )
+date_end_gnuplot=$( date +'%Y-%m-%d' --date="`date +%Y-%m-01` ")
+
+
+date_before_gnuplot_xrange=$( date +'%Y-%m-14' --date="`date +%Y-%m-16` -6 month " )
+date_end_gnuplot_xrange=$( date +'%Y-%m-19' --date="`date +%Y-%m-01` -1 month")
+
+ledger_param="-j -M reg ^Assets:Giro -n -b $date_before -e $date_end"
+
+ledger $ledger_param
+echo $ledger_param
+
+(cat << EOF; ledger $ledger_param) | gnuplot
+  set terminal png size 400,600 enhanced font "Biolinum,10"
+  set output "graphs/giro.png"
+  set xdata time
+  set grid
+  set timefmt "%Y-%m-%d"
+  set format x "%m/%Y"
+  set xtics format "%b"
+  set boxwidth 0.95 relative
+  set xrange [ "$date_before_gnuplot_xrange" : "$date_end_gnuplot_xrange"]
+  set xtics "$date_before_gnuplot", 2592000, "$date_end_gnuplot"
+  plot "-" using 1:2 title "Kontostand Veränderung" with boxes lc rgb"green" fs solid 0.25
