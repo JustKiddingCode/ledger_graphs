@@ -28,7 +28,7 @@ gnuplot <<- EOF
   set grid
   set timefmt "%Y-%m-%d"
   set format x "%m/%Y"
-  set xtics format "%d"
+  set xtics format "%d\n%b"
   set boxwidth 0.95 relative
   set xrange [ "$date_before_gnuplot_xrange" : "$date_end_gnuplot_xrange"]
   set xtics "$date_before_gnuplot", 604800, "$date_end_gnuplot"
